@@ -4,7 +4,7 @@ import { setToken } from "./token";
 import { sendHomeTab } from "./slack";
 
 const app = new App({
-    logLevel: LogLevel.WARN,  // これはログレベルの調整なので削除しても OK です
+    logLevel: LogLevel.WARN,
     socketMode: true,
     token: process.env.SLACK_BOT_TOKEN,
     signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -37,16 +37,15 @@ app.action("set_zabbix_token", async (e: any) => {
     e.ack()
 });
 
-
 app.action("acknowledge_problem", async (e: any) => {
     if (e.payload.value) {
         await acknowledgeProblem(e.payload.value)
     }
     const block = await getZabbixProblem(e.body.user.id)
     sendHomeTab({ ...e, event: { user: e.body.user.id } }, block)
-
     e.ack()
 });
+
 app.action("close_problem", async (e: any) => {
     if (e.payload.value) {
         await closeProblem(e.payload.value)
@@ -55,8 +54,6 @@ app.action("close_problem", async (e: any) => {
     sendHomeTab({ ...e, event: { user: e.body.user.id } }, block)
     e.ack()
 });
-
-
 
 
 (async () => {
