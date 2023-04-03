@@ -27,7 +27,6 @@ export const setToken = (key: string, host: string, token: string, url?: string)
             token
         }
     }
-    table(tokens[key])
     return getToken(key, host)
 
 }
@@ -39,6 +38,7 @@ export const getTokenByUser = (user: string) => {
 
 export const getHosts = (user: string) => {
     try {
+
         return Object.keys(tokens[user])
 
     } catch (error) {
