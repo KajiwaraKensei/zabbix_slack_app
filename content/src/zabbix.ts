@@ -1,8 +1,7 @@
 import Axios from "axios"
 import moment from "moment"
-import { getToken } from "./token"
+import { getHosts, getSelectHost, getTokenByUser } from "./token"
 
-const ZABBIX_URL = "https://zabbix.kajidog.com/api_jsonrpc.php"
 const SEVERITY = ["未分類", "情報", "警告", "軽度の障害", "重度の障害", "致命的な障害"]
 
 
@@ -24,9 +23,8 @@ type ZabbixRes = {
 
 
 // 障害取得
-export const getProblem = async (token: string) => {
-    console.log(process.env.ZABBIX_TOKEN);
-    return Axios.post(ZABBIX_URL, {
+export const getProblem = async (token: string, url: string) => {
+    return Axios.post(url, {
         "jsonrpc": "2.0",
         "method": "problem.get",
         "params": {
@@ -51,29 +49,32 @@ export const getProblem = async (token: string) => {
 }
 
 // クローズ
-export const closeProblem = (ids: string) => {
-    return Axios.post(ZABBIX_URL, {
+export const closeProblem = (ids: string, user: string) => {
+    const { token, url } = getTokenByUser(user)
+    return Axios.post(url, {
         "jsonrpc": "2.0",
         "method": "event.acknowledge",
         "params": {
             "eventids": ids,
             "action": 1,
         },
-        "auth": process.env.ZABBIX_TOKEN,
+        "auth": token,
         "id": 1
     }).then(() => sleep(1.75))
 }
 
 // アクナレッジ
-export const acknowledgeProblem = (ids: string) => {
-    return Axios.post(ZABBIX_URL, {
+export const acknowledgeProblem = (ids: string, user: string) => {
+    const { token, url } = getTokenByUser(user)
+
+    return Axios.post(url, {
         "jsonrpc": "2.0",
         "method": "event.acknowledge",
         "params": {
             "eventids": ids,
             "action": 2,
         },
-        "auth": process.env.ZABBIX_TOKEN,
+        "auth": token,
         "id": 1
     }).then(() => sleep(1))
 }
@@ -81,7 +82,7 @@ export const acknowledgeProblem = (ids: string) => {
 // Zabbixの障害を取得
 export const getZabbixProblem = async (user: string) => {
     try {
-        const token = getToken(user)
+        const token = getTokenByUser(user)
 
         // トークンがない場合
         if (!token) {
@@ -89,15 +90,17 @@ export const getZabbixProblem = async (user: string) => {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": `トークンを設定してください`
+                    "text": `\nトークンを設定してください`
                 }
             }]
         }
 
-        const prom = await getProblem(token);
+        const prom = await getProblem(token.token, token.url);
         return createProblemCard(prom)
 
     } catch (error) {
+        console.error(error);
+
         return [{
             "type": "section",
             "text": {
@@ -165,6 +168,82 @@ const createProblemCard = (prom: any) => {
         })
     }
     return row
+}
+
+
+
+export const createSelectHost = (user: string) => {
+    const selectHostName = getSelectHost(user);
+    const token = getTokenByUser(user)
+    const hosts = mapHosts(user)
+    let temp: { [key: string]: any } = {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": selectHostName ? `*<${token?.url}|${selectHostName}>*` : "ホストが選択されていません\n..."
+        },
+
+
+    }
+
+    const accessory = hosts.length ? {
+        "type": "static_select",
+        "action_id": "select_zabbix_host",
+        "placeholder": {
+            "type": "plain_text",
+            "emoji": true,
+            "text": "zabbix host name"
+        },
+        "options": [
+            ...mapHosts(user)
+        ]
+    } : null;
+    if (accessory) {
+        temp["accessory"] = accessory
+    }
+    return [
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "add zabbix server",
+                        "emoji": true
+                    },
+                    "style": "primary",
+                    "value": "add_host",
+                    "action_id": "add_zabbix_host"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "delete selected zabbix sever",
+                        "emoji": true
+                    },
+                    "style": "danger",
+                    "value": "delete_host",
+                    "action_id": "delete_zabbix_host"
+                }
+            ]
+        },
+        temp,
+
+    ]
+}
+
+const mapHosts = (user: string) => {
+    return getHosts(user).map(hostname => ({
+        "text": {
+            "type": "plain_text",
+            "emoji": true,
+            "text": hostname
+        },
+        "value": hostname
+
+    }))
 }
 
 
