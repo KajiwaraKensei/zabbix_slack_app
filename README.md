@@ -16,7 +16,7 @@ Zabbix API を使用して障害のクローズやアクナレッジが可能
 ```
 
 2. `./manifest.yml`からSlack Appを作成しワークスペースにインストール。`./compose.yml`にTokenを設定  
-(SLACK_APP_TOKENはApp-Level Tokensは手動で作成)
+(SLACK_APP_TOKENはApp-Level Tokensから手動で作成)
 
 <img  width=750 src="./img/app_level.png" />
 
