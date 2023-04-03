@@ -94,9 +94,7 @@ app.action<BlockButtonAction>("add_zabbix_host", async (e) => {
 });
 
 app.view("submit_zabbix_host", async (e) => {
-    console.table(e.view.state.values)
     const { zabbix_url, zabbix_token } = e.view.state.values;
-
 
     const user = e.body.user.id
     const hostname = setSelectHost(user, zabbix_url.zabbix_url.value,)
