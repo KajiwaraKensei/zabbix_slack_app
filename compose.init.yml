@@ -5,5 +5,5 @@ services:
     build: ./.docker/bolt
     working_dir: /app
     volumes:
-      - ./content:/app_bolt
+      - ./content:/app
     tty: true
