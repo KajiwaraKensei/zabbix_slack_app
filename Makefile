@@ -12,6 +12,17 @@ down:
 restart:
 	@make down
 	@make up
+build:
+	docker compose exec app npm run build
+prod-up:
+	docker compose -f compose.prod.yml up -d
+prod-stop:
+	docker compose -f compose.prod.yml stop
+prod-down:
+	docker compose -f compose.prod.yml down --remove-orphans
+prod-restart:
+	@make prod-down
+	@make prod-up
 ps:
 	docker compose ps
 logs:
