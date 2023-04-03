@@ -24,7 +24,7 @@ type ZabbixRes = {
 
 // 障害取得
 export const getProblem = async (token: string, url: string) => {
-    return Axios.post(url, {
+    return Axios.post(url + "/api_jsonrpc.php", {
         "jsonrpc": "2.0",
         "method": "problem.get",
         "params": {
@@ -51,7 +51,7 @@ export const getProblem = async (token: string, url: string) => {
 // クローズ
 export const closeProblem = (ids: string, user: string) => {
     const { token, url } = getTokenByUser(user)
-    return Axios.post(url, {
+    return Axios.post(url + "/api_jsonrpc.php", {
         "jsonrpc": "2.0",
         "method": "event.acknowledge",
         "params": {
@@ -67,7 +67,7 @@ export const closeProblem = (ids: string, user: string) => {
 export const acknowledgeProblem = (ids: string, user: string) => {
     const { token, url } = getTokenByUser(user)
 
-    return Axios.post(url, {
+    return Axios.post(url + "/api_jsonrpc.php", {
         "jsonrpc": "2.0",
         "method": "event.acknowledge",
         "params": {

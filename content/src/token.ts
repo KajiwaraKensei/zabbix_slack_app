@@ -23,7 +23,7 @@ export const setToken = (key: string, host: string, token: string, url?: string)
     tokens[key] = {
         ...tokens[key],
         [host]: {
-            url: url ? (url + "/api_jsonrpc.php") : tokens[key][host].url,
+            url: url || tokens[key][host].url,
             token
         }
     }
