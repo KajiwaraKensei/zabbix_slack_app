@@ -192,15 +192,17 @@ export const createSelectHost = (user: string) => {
         "placeholder": {
             "type": "plain_text",
             "emoji": true,
-            "text": "zabbix host name"
+            "text": "change zabbix server"
         },
         "options": [
             ...mapHosts(user)
         ]
     } : null;
+
     if (accessory) {
         temp["accessory"] = accessory
     }
+
     return [
         {
             "type": "actions",
