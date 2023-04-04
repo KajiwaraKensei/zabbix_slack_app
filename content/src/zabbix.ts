@@ -31,7 +31,7 @@ export const getProblem = async (token: string, url: string) => {
         res.data.result.forEach((a: any) => {
         })
         if (res.data.result) {
-            return res.data.result as ZabbixRes[]
+            return limitArray(res.data.result, 10) as ZabbixRes[]
         }
     })
 }
@@ -71,4 +71,11 @@ const sleep = (second: number) => {
     return new Promise((resolve) => {
         setTimeout(resolve, second * 1000)
     })
+}
+
+function limitArray(arr: any[], limit: number) {
+    if (arr.length > limit) {
+        return arr.slice(0, limit);
+    }
+    return arr;
 }

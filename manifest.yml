@@ -1,12 +1,12 @@
 display_information:
-  name: zabbix_alert_check
+  name: Zabbix alert view
 features:
   app_home:
     home_tab_enabled: true
     messages_tab_enabled: false
     messages_tab_read_only_enabled: true
   bot_user:
-    display_name: zabbix_alert_check
+    display_name: Zabbix_Alert_View
     always_online: true
 oauth_config:
   scopes:

@@ -2,14 +2,14 @@ import moment from "moment";
 import { getHosts, getSelectHost, getTokenByUser } from "./token";
 import { getProblem } from "./zabbix";
 
-const SEVERITY = ["未分類", "情報", "警告", "軽度の障害", "重度の障害", "致命的な障害"]
+const SEVERITY = ["未分類 :grey_question: ", "情報 :iphone: ", "警告 :eyes: ", "軽度の障害 :zap: ", "重度の障害 :rotating_light: ", "致命的な障害 :skull_and_crossbones: "]
 moment.locale('ja');
 
 // Zabbix日本語対応
 const FIELD: { [key: string]: (i: any) => any } = {
-    acknowledged: i => `アクナレッジ: ${i === "1" ? "済み" : "未"}`,
-    clock: i => `障害発生: ${moment(new Date(1000 * Number(i))).format('LLLL')}`,
-    r_clock: i => (i !== "0" ? `*\n*復旧済み: ${moment(new Date(1000 * Number(i))).format('LLLL')}` : ""),
+    acknowledged: i => `アクナレッジ: ${i === "1" ? ":white_check_mark:" : ":x:"}`,
+    clock: i => `発生: ${moment(new Date(1000 * Number(i))).format('LLLL')}`,
+    r_clock: i => (i !== "0" ? `復旧: ${moment(new Date(1000 * Number(i))).format('LLLL')} :tada:` : "復旧: :face_with_spiral_eyes:"),
     severity: i => `深刻度: ${SEVERITY[Number(i)] || "不明"}`
 }
 
@@ -68,14 +68,25 @@ const createProblemCard = (prom: any) => {
     const row: any = []
 
     prom.forEach((i: any) => {
-        const block = {
+
+        row.push({
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": `*${FIELD["clock"](i["clock"])}${FIELD["r_clock"](i["r_clock"])}*\n*${i.name}*\n` + String(["severity", "acknowledged"].map((key) => {
-                    return FIELD[key] ? FIELD[key](i[key]) : `${key}: ${String(i[key])}`
-                }))
+                "text": `*障害発生: ${i.name}*\n`
             }
+        })
+        const block =
+        {
+            "type": "context",
+            "elements": [
+                ...["clock", "r_clock", "severity", "acknowledged"].map((key) => {
+                    return {
+                        "type": "mrkdwn",
+                        "text": FIELD[key] ? FIELD[key](i[key]) : `${key}: ${String(i[key])}`
+                    }
+                })
+            ]
         }
         row.push(block)
         i.r_clock === "0" && row.push({
@@ -132,70 +143,70 @@ export const createSelectHost = (user: string) => {
     const selectHostName = getSelectHost(user);
     const token = getTokenByUser(user)
     const hosts = mapHosts(user)
-    let temp: { [key: string]: any } = {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": selectHostName ? `*<${token?.url}|${selectHostName}>*` : "ホストが選択されていません\n..."
+    const menu: { [key: string]: any }[] = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": selectHostName ? `*<${token?.url}|${selectHostName}>*` : "ホストが選択されていません"
+            },
+            "accessory": {
+                "type": "overflow",
+                "options": [
+                    {
+                        "text": {
+                            "type": "plain_text",
+                            "text": ":hatched_chick: Add Zabbix Server",
+                            "emoji": true
+                        },
+                        "value": "add_host",
+                    },
+                ],
+                "action_id": "menu_select"
+            }
         },
+    ]
+
+    if (selectHostName) {
+        menu[0].accessory.options.push({
+            "text": {
+                "type": "plain_text",
+                "text": `:wastebasket: Delete ${selectHostName}`,
+                "emoji": true
+            },
+            "value": `delete_host`,
+        })
     }
 
-    // ドロップダウンリスト
-    const accessory = hosts.length ? {
-        "type": "static_select",
-        "action_id": "select_zabbix_host",
-        "placeholder": {
-            "type": "plain_text",
-            "emoji": true,
-            "text": "change zabbix server"
-        },
-        "options": [
-            ...mapHosts(user)
+    const temp: { [key: string]: any } =
+    {
+        "type": "actions",
+        "elements": [
+            {
+                "type": "static_select",
+                "placeholder": {
+                    "type": "plain_text",
+                    "emoji": true,
+                    "text": "Change Zabbix Server",
+                },
+                "options": [...mapHosts(user)],
+                "action_id": "select_zabbix_host",
+            }
         ]
-    } : null;
+    }
 
-    // ホストの設定がない場合、ドロップダウンリストは表示しない
-    if (accessory) {
-        temp["accessory"] = accessory
+    if (hosts.length > 0) {
+        menu.push(temp)
     }
 
     // 一番初めに、追加と削除ボタンを表示
-    return [
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "add zabbix server",
-                        "emoji": true
-                    },
-                    "style": "primary",
-                    "value": "add_host",
-                    "action_id": "add_zabbix_host"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "delete selected zabbix sever",
-                        "emoji": true
-                    },
-                    "style": "danger",
-                    "value": "delete_host",
-                    "action_id": "delete_zabbix_host"
-                }
-            ]
-        },
-        temp,
-
-    ]
+    return menu
 }
 
 // ドロップダウンリストのアイテム
 const mapHosts = (user: string) => {
     return getHosts(user).map(hostname => ({
+
         "text": {
             "type": "plain_text",
             "emoji": true,
