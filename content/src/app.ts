@@ -24,17 +24,7 @@ app.event("app_home_opened", async (e) => {
     }
 })
 
-// トークンを入力イベント
-app.action("set_zabbix_token", async (e: any) => {
-
-    // 入力内容がある時だけセット
-    if (e.payload?.value) {
-        setToken(e.body.user.id, "null", e.payload.value)
-    }
-    sendHomeTab(e, e.body.user.id)
-    e.ack()
-});
-
+// モーダル
 app.action<BlockButtonAction>("add_zabbix_host", async (e) => {
 
     e.client.views.open({

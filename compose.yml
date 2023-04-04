@@ -9,5 +9,6 @@ services:
     command: npm run watch
     environment:
       TZ: Asia/Tokyo
-      SLACK_BOT_TOKEN: ""
-      SLACK_APP_TOKEN: ""
+      SLACK_BOT_TOKEN: "xoxb-1185486332496-4345995653024-H7hy6we0IBpPpqL2yJAtY5d6"
+      SLACK_APP_TOKEN: "xapp-1-A0499LD2HD4-5013372471492-3de3a8d4ac81f639a03b9c3f8b492cf9b128e9002848661f3f9ae1e5d3704b19"
+      PRIVATE_KEY_DECRYPTION_PASSPHRASE: password
