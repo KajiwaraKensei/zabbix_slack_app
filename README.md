@@ -37,7 +37,7 @@ watch
     make up
 ```
 
-start(事前にmake buildを実行する必要あり)
+start
 
 ```bash
     make prod-up

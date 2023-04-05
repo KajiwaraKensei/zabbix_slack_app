@@ -1,6 +1,7 @@
 init:
 	docker compose -f compose.init.yml up -d --build
 	docker compose -f compose.init.yml exec app npm install
+	docker compose -f compose.init.yml exec app npm run build
 	docker compose -f compose.init.yml stop
 up:
 	docker compose up -d
